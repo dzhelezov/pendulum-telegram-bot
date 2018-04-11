@@ -27,7 +27,7 @@ bot.on('message', (msg) => {
   if (cmd != '/start') {
     bot.sendMessage(chatId, 'Connected to: ' + prov);
   }
-  if (msg.text.toString() === '.getNodeInfo') {
+  if (msg.text.toString() === '/getNodeInfo') {
       iota.api.getNodeInfo(function(e, response) {
         var lssm = response.latestSolidSubtangleMilestoneIndex;
         var lm = response.latestMilestoneIndex;
