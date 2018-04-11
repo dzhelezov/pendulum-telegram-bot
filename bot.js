@@ -11,16 +11,30 @@ var iota = new IOTA({
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new Bot(token, {polling: true});
 
+function parseResponse(lssm, lm, t, n) {
+  return "Latest Solid Subtangle Milestone Index: " + lssm + '\n' +
+         "Latest Milestone Index: " + lm + '\n' +
+         "Tips: " + t + '\n' +
+         "Neighbors: " + n + '\n';
+}
+
 bot.on('message', (msg) => {
+  const prov = iota.provider;
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Request received...');
-  console.log(msg.text.toString());
+  var cmd = msg.text.toString();
+  bot.sendMessage(chatId, 'Request: ' + cmd + ' received...');
+
+  if (cmd != '/start') {
+    bot.sendMessage(chatId, 'Connected to: ' + prov);
+  }
   if (msg.text.toString() === '.getNodeInfo') {
-    console.log("test");
-    iota.api.getNodeInfo(function(e, response) {
-      var lssm = response.LatestSolidSubtangleMilestoneIndex;
-      console.log('test lssm: ' + lssm);
-      bot.sendMessage(chatId, lssm);
-    });
+      iota.api.getNodeInfo(function(e, response) {
+        var lssm = response.latestSolidSubtangleMilestoneIndex;
+        var lm = response.latestMilestoneIndex;
+        var tips = response.tips;
+        var neighbors = response.neighbors;
+        resp = parseResponse(lssm, lm, tips, neighbors);
+        bot.sendMessage(chatId, resp);
+      });
   }
 });
