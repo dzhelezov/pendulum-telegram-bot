@@ -1,6 +1,6 @@
 const Bot = require('node-telegram-bot-api');
 const IOTA = require('iota.lib.js');
-const config = requier('./config.json');
+const config = require('./config.json');
 
 const provider = 'http://hlxbox.net:14700';
 const token = config.token;
