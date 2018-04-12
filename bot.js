@@ -14,18 +14,24 @@ const bot = new Bot(token, {polling: true});
 
 
 
-bot.on('message', (msg) => {
+bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
-  var cmd = msg.text.toString();
-  bot.sendMessage(chatId, 'Request: ' + cmd + ' received.');
+  const command = msg.text.toString();
+  const help = printUsage();
+  console.log(command);
+  bot.sendMessage(chatId, 'Request: ' + command + ' received.');
 
   /**
   *
   * help Commands
   */
 
-  if (msg.text.toString() === '/help' || '/start') {
-    bot.sendMessage(printUsage());
+  if (command === '/usage') {
+    //var v = printUsage();
+    bot.sendMessage("Request: " + command + " sent to: HlxBot");
+    bot.sendMessage("Available Commands: " + '\n' +
+                    "/getNodeInfo" + '\n' +
+                    "/getTips" + '\n');
   }
 
   /**
@@ -33,21 +39,21 @@ bot.on('message', (msg) => {
   * API Commands
   */
 
-  if (msg.text.toString() === '/getNodeInfo') {
-      req();
+  if (command === '/getNodeInfo') {
+      bot.sendMessage("Request  " + command + " sent to: " + iota.provider);
       iota.api.getNodeInfo(function(e, response) {
         var lssm = response.latestSolidSubtangleMilestoneIndex;
         var lm = response.latestMilestoneIndex;
         var tips = response.tips;
         var neighbors = response.neighbors;
-        resp = parseResponse(lssm, lm, tips, neighbors);
+        resp = parseNodeInfo(lssm, lm, tips, neighbors);
         bot.sendMessage(chatId, resp);
         console.log("'/getNodeInfo' request performed.");
       });
   }
 
-  if (msg.text.toString() === '/getTips') {
-    req();
+  if (command === '/getTips') {
+    bot.sendMessage("Request  " + command + " sent to: " + iota.provider);
     iota.api.getTips(function(e, r) {
         if (!e) {
           var recentTips = r.slice(0,10);
@@ -78,8 +84,4 @@ function parseNodeInfo(lssm, lm, t, n) {
          "Latest Milestone Index: " + lm + '\n' +
          "Tips: " + t + '\n' +
          "Neighbors: " + n + '\n';
-}
-
-function req() {
-  bot.sendMessage("Request '/getNodeInfo' sent to: " + iota.provider);
 }
