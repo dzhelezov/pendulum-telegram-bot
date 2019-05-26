@@ -2,27 +2,25 @@
   "name": "hlx-bot",
   "version": "0.0.1",
   "description": "An application to contribute to Helix Network.",
-  "main": "spam.js",
+  "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/helixnetwork/hlx-spam.git"
+    "url": "git+https://github.com/helixnetwork/hlx-bot.git"
   },
   "keywords": [
-    "iota",
-    "repeater",
-    "spammer"
+    "bot"
   ],
-  "author": "alfredch",
-  "license": "ISC",
+  "author": "ofo42",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/helixnetwork/hlx-spam/issues"
   },
   "homepage": "https://github.com/helixnetwork/hlx-spam#readme",
   "dependencies": {
-    "iota.lib.js": "0.4.3",
-    "node-telegram-bot-api": "0.30.0"
+    "@helixnetwork/core": "^1.0.0-alpha.2",
+    "telegram-bot-api": "^1.3.3"
   }
 }

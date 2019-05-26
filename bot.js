@@ -1,37 +1,45 @@
-const Bot = require('node-telegram-bot-api');
-const IOTA = require('iota.lib.js');
-const config = require('./config.json');
+const Helix = require("@helixnetwork/core");
+const Bot = require('telegram-bot-api');
+const conf = require('./conf.json');
 
-const provider = 'http://hlxbox.net:14700';
-const token = config.token;
-const trigger = 'getNodeInfo';
+const provider = conf.PROVIDER;
+const token = conf.TOKEN;
 
-var iota = new IOTA({
-    'provider': provider,
-});
+let helix = Helix.composeAPI({
+    provider: provider
+  });
+
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new Bot(token, {polling: true});
+const bot = new Bot({
+        token: token,
+        updates: {
+        	enabled: true
+        }
+});
 
+bot.on('message', function (message) {
+  const chatId = message.chat.id;
+  const command = message.text.toString();
 
-
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-  const command = msg.text.toString();
-  const help = printUsage();
   console.log(command);
-  bot.sendMessage(chatId, 'Request: ' + command + ' received.');
+
+  bot.sendMessage(
+    {
+      chat_id: chatId,
+      text: message.text + ' request received.'
+    })
 
   /**
   *
   * help Commands
   */
 
-  if (command === '/usage') {
-    //var v = printUsage();
-    bot.sendMessage("Request: " + command + " sent to: HlxBot");
-    bot.sendMessage("Available Commands: " + '\n' +
-                    "/getNodeInfo" + '\n' +
-                    "/getTips" + '\n');
+  if (command === '/start') {
+    bot.sendMessage(
+      {
+        chat_id: chatId,
+        text: "start"
+      })
   }
 
   /**
@@ -40,43 +48,94 @@ bot.on('message', async (msg) => {
   */
 
   if (command === '/getNodeInfo') {
-      bot.sendMessage("Request  " + command + " sent to: " + iota.provider);
-      iota.api.getNodeInfo(function(e, response) {
-        var lssm = response.latestSolidSubtangleMilestoneIndex;
-        var lm = response.latestMilestoneIndex;
-        var tips = response.tips;
-        var neighbors = response.neighbors;
-        resp = parseNodeInfo(lssm, lm, tips, neighbors);
-        bot.sendMessage(chatId, resp);
-        console.log("'/getNodeInfo' request performed.");
-      });
+      helix.getNodeInfo()
+        .then(info => {
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              parse_mode: "Markdown",
+              text: toCodeSnippet(JSON.stringify(info, null, 2), command)
+            });
+        })
+        .then(() => {
+          console.log("'/getNodeInfo' request performed.");
+        })
+        .catch(err => {
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              text: err
+            })
+        })
   }
 
   if (command === '/getTips') {
-    bot.sendMessage("Request  " + command + " sent to: " + iota.provider);
-    iota.api.getTips(function(e, r) {
-        if (!e) {
-          var recentTips = r.slice(0,10);
-          bot.sendMessage(chatId, "Latest Tips:" + '\n' + recentTips);
-        }
-        else {
-          bot.sendMessage(chatId, "Error: " + '\n' + e);
-        }
-        console.log("'/getTips' request performed.");
-    });
+    helix.getTips()
+        .then(tips => {
+          if (tips.length > 25) {
+            let tips = tips.slice(0,10);
+          }
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              parse_mode: "Markdown",
+              text: toCodeSnippet(tips, command)
+            })
+        })
+        .then(() => {
+          console.log("'/getTips' request performed.");
+        })
+        .catch(err => {
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              text: err
+            })
+        })
   }
-});
+  if (command === '/spam') {
+    helix.prepareTransfers(conf.SEED, conf.TX_TEMPLATE)
+        .then((HBytes) => {
+          storedHBytes = HBytes;
+          return helix.sendHBytes(storedHBytes, conf.DEPTH, conf.MWM);
+        })
+        .then(results => {
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              parse_mode: "Markdown",
+              text: toCodeSnippet(JSON.stringify(results, null, 2), command)
+            })
+        })
+        .then(() => {
+          console.log("'/spam' request performed.");
+        })
+        .catch(err => {
+          bot.sendMessage(
+            {
+              chat_id: chatId,
+              text: err
+            })
+        })
+  }
+
+})
 
 /**
 *
 * Helper Functions
 */
 
+function toCodeSnippet(str, cmd) {
+  return "*" + cmd + "Response* " +"``` " + str + "\n ```"
+}
 
-function printUsage() {
-  return "Available Commands: " + '\n' +
-         "/getNodeInfo" + '\n' +
-         "/getTips" + '\n';
+/*
+function printUsage(command) {
+  bot.sendMessage("Request: " + command + " sent to: hlxtestBot");
+  bot.sendMessage("Available Commands: " + '\n' +
+                  "/getNodeInfo" + '\n' +
+                  "/getTips" + '\n');
 }
 
 function parseNodeInfo(lssm, lm, t, n) {
@@ -85,3 +144,4 @@ function parseNodeInfo(lssm, lm, t, n) {
          "Tips: " + t + '\n' +
          "Neighbors: " + n + '\n';
 }
+*/
