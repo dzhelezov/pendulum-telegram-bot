@@ -38,7 +38,8 @@ bot.on('message', function (message) {
     bot.sendMessage(
       {
         chat_id: chatId,
-        text: "start"
+        parse_mode: "Markdown",
+        text: "*HLXtestBot* started" + "\u{1F916}"
       })
   }
 
@@ -55,7 +56,7 @@ bot.on('message', function (message) {
               chat_id: chatId,
               parse_mode: "Markdown",
               text: toCodeSnippet(JSON.stringify(info, null, 2), command)
-            });
+            })
         })
         .then(() => {
           console.log("'/getNodeInfo' request performed.");
@@ -118,7 +119,6 @@ bot.on('message', function (message) {
             })
         })
   }
-
 })
 
 /**
@@ -127,7 +127,7 @@ bot.on('message', function (message) {
 */
 
 function toCodeSnippet(str, cmd) {
-  return "*" + cmd + "Response* " +"``` " + str + "\n ```"
+  return "``` " + str + "\n ```"
 }
 
 /*
