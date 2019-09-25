@@ -7,7 +7,7 @@
   "TAG": "HELIXSPAM",
   "DEPTH": 3,
   "MWM": 1,
-  "PROVIDER": "http://18.184.6.125:14700",
+  "PROVIDER": "https://hlxtest.net:8085",
   "TX_TEMPLATE": [{
       "address": "0000000000000000000000000000000000000000000000000000000000000000",
       "value": 0,

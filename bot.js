@@ -39,7 +39,7 @@ bot.on('message', function (message) {
       {
         chat_id: chatId,
         parse_mode: "Markdown",
-        text: "*HLXtestBot* started" + "\u{1F916}"
+        text: "*HelixBot* started" + "\u{1F916}"
       })
   }
 
@@ -69,7 +69,7 @@ bot.on('message', function (message) {
             })
         })
   }
-
+  /*
   if (command === '/getTips') {
     helix.getTips()
         .then(tips => {
@@ -94,6 +94,7 @@ bot.on('message', function (message) {
             })
         })
   }
+
   if (command === '/spam') {
     helix.prepareTransfers(conf.SEED, conf.TX_TEMPLATE)
         .then((HBytes) => {
@@ -118,7 +119,7 @@ bot.on('message', function (message) {
               text: err
             })
         })
-  }
+  }*/
 })
 
 /**
