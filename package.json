@@ -20,7 +20,9 @@
   },
   "homepage": "https://github.com/helixnetwork/hlx-spam#readme",
   "dependencies": {
-    "@helixnetwork/core": "^1.0.0-alpha.2",
+    "@helixnetwork/core": "^1.0.0-alpha.6",
+    "dotenv": "^8.1.0",
+    "lambda-local": "^1.6.3",
     "telegram-bot-api": "^1.3.3"
   }
 }

@@ -1,125 +1,94 @@
 const Helix = require("@helixnetwork/core");
 const Bot = require('telegram-bot-api');
 const conf = require('./conf.json');
+const { token, provider }  = require('./conf-env.js')
 
-const provider = conf.PROVIDER;
-const token = conf.TOKEN;
+//edit .env file or provide from cli
+//const provider = process.env.HELIX_PROVIDER;
+//const token = process.env.BOT_TOKEN;
 
 let helix = Helix.composeAPI({
     provider: provider
-  });
-
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new Bot({
-        token: token,
-        updates: {
-        	enabled: true
-        }
 });
 
-bot.on('message', function (message) {
-  const chatId = message.chat.id;
-  const command = message.text.toString();
+const bot = new Bot({
+        token: token
+});
 
-  console.log(command);
+const txInfoRegex = '/getTxInfo (.*)$/'
 
-  bot.sendMessage(
-    {
-      chat_id: chatId,
-      text: message.text + ' request received.'
-    })
+module.exports = {
+    handleBotMessage: function (message) {
+      const chatId = message.chat.id;
+      const command = message.text.toString();
 
-  /**
-  *
-  * help Commands
-  */
+      console.log(command);
 
-  if (command === '/start') {
-    bot.sendMessage(
+      bot.sendMessage(
       {
-        chat_id: chatId,
-        parse_mode: "Markdown",
-        text: "*HLXtestBot* started" + "\u{1F916}"
+          chat_id: chatId,
+          text: message.text + ' request received.'
       })
-  }
 
-  /**
-  *
-  * API Commands
-  */
+      /**
+      *
+      * help Commands
+      */
 
-  if (command === '/getNodeInfo') {
-      helix.getNodeInfo()
-        .then(info => {
-          bot.sendMessage(
-            {
+      if (command === '/start') {
+          bot.sendMessage({
               chat_id: chatId,
               parse_mode: "Markdown",
-              text: toCodeSnippet(JSON.stringify(info, null, 2), command)
-            })
-        })
-        .then(() => {
-          console.log("'/getNodeInfo' request performed.");
-        })
-        .catch(err => {
-          bot.sendMessage(
-            {
-              chat_id: chatId,
-              text: err
-            })
-        })
-  }
+              text: "*HLXtestBot* started" + "\u{1F916}"
+          })
+      }
 
-  if (command === '/getTips') {
-    helix.getTips()
-        .then(tips => {
-          if (tips.length > 25) {
-            let tips = tips.slice(0,10);
-          }
-          bot.sendMessage(
-            {
-              chat_id: chatId,
-              parse_mode: "Markdown",
-              text: toCodeSnippet(tips, command)
+      /**
+      *
+      * API Commands
+      */
+      if (command.indexOf("getTxInfo") !== -1) {
+          let parse = command.match('/getTxInfo\s*([A-Fa-f0-9]+)/$')
+          helix.getTransactionObjects([parse[0]])
+            .then(txs => {
+              bot.sendMessage({
+                 chat_id: chatId,
+                 parse_mode: "Markdown",
+                 text: toCodeSnippet(JSON.stringify(txs, null, 2))
+              })
             })
-        })
-        .then(() => {
-          console.log("'/getTips' request performed.");
-        })
-        .catch(err => {
-          bot.sendMessage(
-            {
-              chat_id: chatId,
-              text: err
+            .catch(err => {
+                console.log(err)
+                bot.sentMessage({
+                  chat_id: chatId,
+                  text: "Failed to get Tx info by the hash. \
+                         Please check the syntax and try again"
+                })
             })
-        })
-  }
-  if (command === '/spam') {
-    helix.prepareTransfers(conf.SEED, conf.TX_TEMPLATE)
-        .then((HBytes) => {
-          storedHBytes = HBytes;
-          return helix.sendHBytes(storedHBytes, conf.DEPTH, conf.MWM);
-        })
-        .then(results => {
-          bot.sendMessage(
-            {
-              chat_id: chatId,
-              parse_mode: "Markdown",
-              text: toCodeSnippet(JSON.stringify(results, null, 2), command)
-            })
-        })
-        .then(() => {
-          console.log("'/spam' request performed.");
-        })
-        .catch(err => {
-          bot.sendMessage(
-            {
-              chat_id: chatId,
-              text: err
-            })
-        })
-  }
-})
+      }
+
+      if (command === '/getNodeInfo') {
+          helix.getNodeInfo()
+          .then(info => {
+              bot.sendMessage({
+                chat_id: chatId,
+                parse_mode: "Markdown",
+                text: toCodeSnippet(JSON.stringify(info, null, 2), command)
+              })
+          })
+          .then(() => {
+                console.log("'/getNodeInfo' request performed.");
+          })
+          .catch(err => {
+              bot.sendMessage({
+                chat_id: chatId,
+                text: err
+              })
+          })
+      }
+
+   }
+}
 
 /**
 *
@@ -129,6 +98,8 @@ bot.on('message', function (message) {
 function toCodeSnippet(str, cmd) {
   return "``` " + str + "\n ```"
 }
+
+
 
 /*
 function printUsage(command) {
