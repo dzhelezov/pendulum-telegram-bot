@@ -1,34 +1,46 @@
 const Helix = require("@helixnetwork/core");
 const Bot = require('telegram-bot-api');
-const conf = require('./conf.json');
 const { token, provider }  = require('./conf-env.js')
 
 //edit .env file or provide from cli
 //const provider = process.env.HELIX_PROVIDER;
 //const token = process.env.BOT_TOKEN;
 
-let helix = Helix.composeAPI({
+const helix = Helix.composeAPI({
     provider: provider
 });
 
 const bot = new Bot({
-        token: token
+    token: token
 });
 
-const txInfoRegex = '/getTxInfo (.*)$/'
+
+const TX_INFO_REGEX = /\/getTxInfo\s*([A-Fa-f0-9]+)/g
 
 module.exports = {
-    handleBotMessage: function (message) {
-      const chatId = message.chat.id;
-      const command = message.text.toString();
+    handleBotMessage: async function (message) {
+      console.log("Handling message");
+      console.log(message);
+
+      //if (message.date < Math.floor(Date.now()/1000) - 5) {
+      //  console.log("The message is > 5 secs old, dropping")
+      //  console.log(Math.floor(Date.now()/1000))
+      //  return
+      //}
+
+      let chatId = message.chat.id;
+      let command = message.text.toString();
+
+      let showError =  (err, err_text) => {
+        console.log(err)
+        bot.sendMessage({
+          chat_id: chatId,
+          parse_mode: "Markdown",
+          text: err_text
+        })
+      }
 
       console.log(command);
-
-      bot.sendMessage(
-      {
-          chat_id: chatId,
-          text: message.text + ' request received.'
-      })
 
       /**
       *
@@ -39,41 +51,57 @@ module.exports = {
           bot.sendMessage({
               chat_id: chatId,
               parse_mode: "Markdown",
-              text: "*HLXtestBot* started" + "\u{1F916}"
+              text: "*HLXtestBot* started" + "\u{1F916}\n" + usageString()
           })
+          return
       }
 
       /**
       *
       * API Commands
       */
-      if (command.indexOf("getTxInfo") !== -1) {
-          let parse = command.match('/getTxInfo\s*([A-Fa-f0-9]+)/$')
-          helix.getTransactionObjects([parse[0]])
-            .then(txs => {
+      if (command.indexOf("/getTxInfo") !== -1) {
+          console.log("getTxInfo: " + command)
+
+
+          let parse = TX_INFO_REGEX.exec(command)
+          console.log(parse)
+
+          if (parse === null) {
+             showError("Parse error: " + command,
+             `Failed to get Tx Info from:\"${command}\"\nUsage: getTxInfo <tx hash>`)
+              return
+          }
+
+          let tx = parse[1]
+          console.log("Transaction hash: " + tx)
+          //let info = await helix.getNodeInfo();
+
+          confirm(tx)
+            .then(incl => {
+              console.log(incl)
               bot.sendMessage({
-                 chat_id: chatId,
-                 parse_mode: "Markdown",
-                 text: toCodeSnippet(JSON.stringify(txs, null, 2))
+                chat_id: chatId,
+                    parse_mode: "Markdown",
+                    text: incl[0] ? `*${tx}* is confirmed! ` : `*${tx}* is not confirmed`
               })
             })
             .catch(err => {
-                console.log(err)
-                bot.sentMessage({
-                  chat_id: chatId,
-                  text: "Failed to get Tx info by the hash. \
-                         Please check the syntax and try again"
-                })
+                showError("Error: " + err,
+                  `Failed to get Tx of *${tx}* \n${err}`)
             })
       }
 
       if (command === '/getNodeInfo') {
+          console.log("Requesting node info")
           helix.getNodeInfo()
           .then(info => {
+              console.log("Info done")
               bot.sendMessage({
                 chat_id: chatId,
                 parse_mode: "Markdown",
-                text: toCodeSnippet(JSON.stringify(info, null, 2), command)
+                text: toCodeSnippet(`Provider: ${provider}\n`
+                  + JSON.stringify(info, null, 2))
               })
           })
           .then(() => {
@@ -95,11 +123,27 @@ module.exports = {
 * Helper Functions
 */
 
+function usageString() {
+  return "/getNodeInfo : request info about the current provider\n" +
+         "/getTxInfo <hash> : request confirmation status of a transcation"
+}
+
 function toCodeSnippet(str, cmd) {
   return "``` " + str + "\n ```"
 }
 
-
+async function confirm(txs){
+  let info = await helix.getNodeInfo();
+  console.log(info);
+  try {
+    let incl = await helix.getInclusionStates([txs],[info.latestSolidRoundHash])
+    console.log(incl);
+    return incl;
+  } catch(err) {
+    console.log(err);
+    throw err;
+  }
+}
 
 /*
 function printUsage(command) {
