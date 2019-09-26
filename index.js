@@ -7,12 +7,20 @@ exports.handler = function (event, context, callback) {
         "statusCode": 200,
         "headers": {
             "Content-Type": "*/*",
-        },
-        "body": "OK"
+        }
     };
     console.log(data);
     console.log(data.message);
     bot.handleBotMessage(data.message)
-        .then(() => callback(null, res));
+        .then(() => {
+          res.body = "OK";
+          callback(null, res)
+        })
+        .catch((err) => {
+          // we still send 200
+          // to prevent repeated webhook calls
+          res.body = `Error: ${err}`;
+          callback(null, res)
+        });
 
 };
