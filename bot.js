@@ -185,7 +185,7 @@ function getNodeInfo(context) {
 
 function usageString() {
   // TODO: compile from the command map
-  return "/getNodeInfo: request info about the current provider\n" +
+  return "/getNodeInfo <address>: request info about your favorite Helix node\n" +
          "/getTxInfo <hash>: request confirmation status of a transcation\n" +
          "/giveMeMoney <address>: request 1000 HLX to the specified address\n" +
          "/pleaseHelpMe: in case you think something is broken or you feel lonely"
