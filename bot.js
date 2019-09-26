@@ -166,7 +166,7 @@ function getNodeInfo(context) {
       bot.sendMessage({
         chat_id: chatId,
         parse_mode: "Markdown",
-        text: `*Helix Node*: ${provider}\n`
+        text: `*Helix Node*: ${parse[1]}\n`
           + toCodeSnippet(JSON.stringify(info, null, 2))
       })
   }).catch(err => {
