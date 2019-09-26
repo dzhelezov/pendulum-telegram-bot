@@ -151,8 +151,9 @@ function getNodeInfo(context) {
   console.log(parse)
 
   let node = helix;
+  let nodeUrl = provider;
   if (parse !== null) {
-    let provider = parse[1]
+    nodeUrl = parse[1]
     node = Helix.composeAPI({
         provider: provider
     });
@@ -166,7 +167,7 @@ function getNodeInfo(context) {
       bot.sendMessage({
         chat_id: chatId,
         parse_mode: "Markdown",
-        text: `*Helix Node*: ${parse[1]}\n`
+        text: `*Helix Node*: ${nodeUrl}\n`
           + toCodeSnippet(JSON.stringify(info, null, 2))
       })
   }).catch(err => {
