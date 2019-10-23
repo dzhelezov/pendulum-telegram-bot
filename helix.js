@@ -42,7 +42,11 @@ const send = async function(seed, snd, rcv, val) {
       const bundle = await helix.sendTransactionStrings(txs, depth, minWeightMagnitude)
       console.log(`Sent bundle: ${JSON.stringify(bundle)}`);
 
-      return bundle[0].bundle;
+      return {
+         bundle: bundle[0].bundle,
+         txs: bundle.map(b => b.hash),
+         values: bundle.map(b => b.value)
+      };
     } catch (err) {
       console.error(`Failed to send: ${err}`);
       throw err;
@@ -66,7 +70,11 @@ const nodeInfo = async (url) => {
     }
 }
 
+const getConfimationStatus = async (txHash) => {
+    return await helix.getInclusionStates([txHash]);
+}
+
 
 module.exports = {
-  send, getBalance, nodeInfo
+  send, getBalance, nodeInfo, getConfimationStatus
 }
