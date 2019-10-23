@@ -73,10 +73,13 @@ async function getRows(indexes, sheet) {
             //   return
             //}
             // can't get the godamn regex working, doing split
-            var index = r.range.split("!")[1].split(":")[0];
+            var cell = r.range.split("!")[1].split(":")[0];
+            // this is the cell to where the updates for this row
+            // should be written
+            var updateCell = cell.replace("A", "C");
 
             toReturn.push({
-                address, seed, index
+                address, seed, updateCell
             });
         })
         resolve(toReturn);
