@@ -6,6 +6,5 @@ module.exports = {
   seed: process.env.SEED,
   spreadsheetId: process.env.SPREADSHEET,
   sheet: process.env.SHEET,
-  keyFile: process.env.KEY_FILE,
-  gapiKey: process.env.GAPI_KEY
+  keyFile: process.env.KEY_FILE
 };
