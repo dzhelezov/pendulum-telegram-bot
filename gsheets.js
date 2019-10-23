@@ -12,7 +12,7 @@
 // limitations under the License.
 'use strict';
 
-const { spreadsheetId, sheet, keyFile, gapiKey }  = require('./conf-env.js')
+const { spreadsheetId, sheet, keyFile }  = require('./conf-env.js')
 const { google } = require('googleapis');
 const path = require('path');
 
