@@ -53,7 +53,7 @@ async function get(ranges) {
                 reject(err)
                 return
             }
-            
+
             resolve(response.data.valueRanges);
         })
     })
@@ -75,7 +75,7 @@ async function getRows(indexes, sheet) {
 
     var valueRanges = await get(ranges);
     return valueRanges.map(r => {
-
+       // can't make the godamn regex working, doing ugly splits
        var cell = r.range.split("!")[1].split(":")[0];
        var updateCell = cell.replace("A", "C");
        return {
@@ -123,11 +123,15 @@ async function updateSheet(cell, value, sheet) {
 }
 
 if (module === require.main) {
+  // TODO: this should really be unit tests
   getStats().
     then((response) => console.log(JSON.stringify(response))).
     catch((err) => console.error(err));
-  getRows([2332, 124, 34, 3, 5]).
+  getRows([2332, 3, 34, 3, 5]).
     then((response) => console.log(JSON.stringify(response))).
+    catch((err) => console.error(err));
+  get(['fuck']).
+    //then((response) => console.log(JSON.stringify(response))).
     catch((err) => console.error(err));
   //updateSheet('C143', 'test32432434').
   //    then((response) => console.log(response)).
