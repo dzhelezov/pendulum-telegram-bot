@@ -74,12 +74,12 @@ function testStart() {
 }
 
 if (module === require.main) {
-    setTimeout(() => testHelp(), 1000);
-    setTimeout(() => testTx(), 1000);
+    //setTimeout(() => testHelp(), 1000);
+    //setTimeout(() => testTx(), 1000);
     setTimeout(() => testFaucet(), 1000);
-    setTimeout(() => testStart(), 1000);
-    setTimeout(() => testInfo(), 1000);
-    setTimeout(() => testBalance(), 1000);
+    //setTimeout(() => testStart(), 1000);
+    //setTimeout(() => testInfo(), 1000);
+    //setTimeout(() => testBalance(), 1000);
 
     //testTx();
     //testFaucet();

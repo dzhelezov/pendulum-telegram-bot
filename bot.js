@@ -130,11 +130,11 @@ async function giveMeMoney(context) {
         // take the first available, there will be one with overwhelming probability
         let { seed, address, updateCell } = rows.filter(r => r.available)[0];
 
-        let sendRes = await send(seed, address, rcv, 1000);
+        let sendRes = await send(seed, address, rcv, 10000);
         console.log(sendRes);
         let tx = sendRes.txs[0];
         // update the sheet with the address of the looter
-        await updateSheet(updateCell, rcv);
+        await updateSheet(updateCell, `User: ${context.chat.username}, addr: ${rcv}`);
 
         return botMessage(context, `All done, your HLX is on it's way. You can check the\ ` +
             `transaction status by the hash: *${tx}*`)
@@ -202,7 +202,7 @@ function usageString() {
 /getNodeInfo <url>: request info about your favorite Helix node
 /getTxInfo <hash>: request confirmation status of a transcation
 /checkBalance <address>: check the current balance of an address
-/giveMeMoney <address>: request 1000 HLX to the specified address
+/giveMeMoney <address>: request 10000 HLX to the specified address
 /pleaseHelpMe: in case you think something is broken or you feel lonely`
 }
 
