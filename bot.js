@@ -1,7 +1,8 @@
 const Bot = require('telegram-bot-api');
-const { token }  = require('./conf-env.js')
+const { token, provider }  = require('./conf-env.js')
 const { send, getBalance, nodeInfo, getConfimationStatus } = require('./helix.js')
 const { getRows, updateSheet, getStats } = require('./gsheets.js')
+const { promiseTimeout, TimeoutException } = require('./utils.js')
 
 const bot = new Bot({
     token: token
@@ -14,12 +15,32 @@ function UserException(userText, error) {
     this.name = 'UserException';
 }
 
-const FAUCET_REGEX = /\/giveMeMoney\s*([A-Fa-f0-9]+)/g
-const TX_INFO_REGEX = /\/getTxInfo\s*([A-Fa-f0-9]+)/g
-const NODE_INFO_REGEX = /\/getNodeInfo\s*([\/\.:A-Za-z0-9]+)/g
-const BALANCE_REGEX = /\/checkBalance\s*([A-Fa-f0-9]+)/g
+const FAUCET_REGEX = /.*\/giveMeMoney[\n\r\s]+([A-Fa-f0-9]+).*/g
+const TX_INFO_REGEX = /.*\/getTxInfo[\n\r\s]+([A-Fa-f0-9]+).*/g
+const NODE_INFO_REGEX = /.*\/getNodeInfo[\n\r\s]+([\/\.:A-Za-z0-9]+).*/g
+const BALANCE_REGEX = /.*\/checkBalance[\n\r\s]+([A-Fa-f0-9]+).*/g
 
+async function handleWithTimeout(context, ts) {
+      let waitMsg = await botMessage(context, `Processing`);
+      console.log(`Wait msg: ${JSON.stringify(waitMsg)}`);
+      try {
+          context.replyTo = context.message_id;
+          context.editMessage = waitMsg.message_id;
+          await promiseTimeout(2000, handleBotMessage(context))
+      } catch (err) {
+          if (err instanceof TimeoutException) {
+            return await botMessage(context, `Sorry, I had to abort the request as\ ` +
+                `as it was taking too long to complete. Please, try again.`);
+          }
 
+          if (err instanceof UserException) {
+              console.error(err.error);
+              return await botMessage(context, err.userText);
+          }
+          console.log(err);
+          return await botMessage(context, `Oooops, an unexpected error occured`);
+      }
+}
 
 async function handleBotMessage(message) {
     console.log(`Handling message ${JSON.stringify(message)}`);
@@ -31,39 +52,43 @@ async function handleBotMessage(message) {
     *
     * TODO: refactor with a command map
     */
-    try {
-        if (command === '/start') {
-            return await startDialog(context)
-        } else  if (command.indexOf('/checkBalance') !==  -1) {
-            return await checkBalance(context)
-        } else  if (command.indexOf('/giveMeMoney') !==  -1) {
-            return await giveMeMoney(context)
-        } else if (command.indexOf('/getTxInfo') !== -1) {
-            return await getTxInfo(context)
-        } else if (command.indexOf('/getNodeInfo') !== -1) {
-            return await getNodeInfo(context)
-        } else if (command.indexOf('/pleaseHelpMe') !== -1) {
-            return await getHelpInfo(context)
-        }
-    } catch (err) {
-      console.error(err);
-      if (err instanceof UserException) {
-          console.error(err.error);
-          return botMessage(context, err.userText);
-      } else {
-          return botMessage(context, `Oooops, something went wrong`);
-      }
+
+    if (command === '/start') {
+        return await startDialog(context)
+    } else  if (command.indexOf('/checkBalance') !==  -1) {
+        return await checkBalance(context)
+    } else  if (command.indexOf('/giveMeMoney') !==  -1) {
+        return await giveMeMoney(context)
+    } else if (command.indexOf('/getTxInfo') !== -1) {
+        return await getTxInfo(context)
+    } else if (command.indexOf('/getNodeInfo') !== -1) {
+        return await getNodeInfo(context)
+    } else if (command.indexOf('/pleaseHelpMe') !== -1) {
+        return await getHelpInfo(context)
     }
 
  }
 
 async function botMessage(context, text) {
     let chatId = context.chat.id;
-    return bot.sendMessage({
+    if (context.editMessage) {
+      return bot.editMessageText({
+          chat_id: context.chat.id,
+          message_id: context.editMessage,
+          parse_mode: "Markdown",
+          text: text
+      });
+    }
+    let msg = {
         chat_id: chatId,
         parse_mode: "Markdown",
         text: text.replace("\n", "")
-    })
+    }
+    if (context.replyTo || context.message_id) {
+      msg.reply_to_message_id = (context.replyTo) ?
+            context.replyTo : context.message_id;
+    }
+    return bot.sendMessage(msg);
 }
 
 
@@ -179,7 +204,12 @@ async function getNodeInfo(context) {
 
     let parse = NODE_INFO_REGEX.exec(command)
     console.log(parse)
-    let nodeUrl = (parse !== null) ? parse[1] : provider;
+    if (parse === null) {
+      throw new UserException(`Hmm, the string _${command}_ you provided\ ` +
+         `does not look like a valid URL. \nUsage: /getNodeInfo <url>`, 'PARSE_ERROR');
+    }
+    let nodeUrl = parse[1];
+
     try {
       console.log(`Requesting node info: ${nodeUrl}`);
       let info = await nodeInfo(nodeUrl);
@@ -211,5 +241,5 @@ function toCodeSnippet(str, cmd) {
 }
 
 module.exports = {
-  handleBotMessage
+  handleBotMessage, handleWithTimeout
 }

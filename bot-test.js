@@ -1,4 +1,4 @@
-const { handleBotMessage } = require('./bot.js')
+const { handleBotMessage, handleWithTimeout } = require('./bot.js')
 
 function testBalance() {
     let context = {
@@ -7,7 +7,7 @@ function testBalance() {
         id: 370798623
       }
     }
-    handleBotMessage(context)
+    handleWithTimeout(context, 2000)
         .then(r => console.log(r))
         .catch(e => console.error(e));
 }
@@ -19,7 +19,7 @@ function testInfo() {
       id: 370798623
     }
   }
-  handleBotMessage(context)
+  handleWithTimeout(context, 2000)
       .then(r => console.log(r))
       .catch(e => console.error(e));
 }
@@ -31,7 +31,7 @@ function testFaucet() {
       id: 370798623
     }
   }
-  handleBotMessage(context)
+  handleWithTimeout(context, 2000)
       .then(r => console.log(r))
       .catch(e => console.error(e));
 }
@@ -43,7 +43,7 @@ function testTx() {
       id: 370798623
     }
   }
-  handleBotMessage(context)
+  handleWithTimeout(context, 2000)
       .then(r => console.log(r))
       .catch(e => console.error(e));
 }
@@ -55,7 +55,7 @@ function testHelp() {
       id: 370798623
     }
   }
-  handleBotMessage(context)
+  handleWithTimeout(context, 2000)
       .then(r => console.log(r))
       .catch(e => console.error(e));
 }
@@ -67,19 +67,19 @@ function testStart() {
       id: 370798623
     }
   }
-  handleBotMessage(context)
+  handleWithTimeout(context, 2000)
       .then(r => console.log(r))
       .catch(e => console.error(e));
 
 }
 
 if (module === require.main) {
-    //setTimeout(() => testHelp(), 1000);
-    //setTimeout(() => testTx(), 1000);
+    setTimeout(() => testHelp(), 1000);
+    setTimeout(() => testTx(), 1000);
     setTimeout(() => testFaucet(), 1000);
-    //setTimeout(() => testStart(), 1000);
-    //setTimeout(() => testInfo(), 1000);
-    //setTimeout(() => testBalance(), 1000);
+    setTimeout(() => testStart(), 1000);
+    setTimeout(() => testInfo(), 1000);
+    setTimeout(() => testBalance(), 1000);
 
     //testTx();
     //testFaucet();
