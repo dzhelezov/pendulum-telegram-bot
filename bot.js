@@ -15,10 +15,10 @@ function UserException(userText, error) {
     this.name = 'UserException';
 }
 
-const FAUCET_REGEX = /.*\/giveMeMoney[\n\r\s]+([A-Fa-f0-9]+).*/g
-const TX_INFO_REGEX = /.*\/getTxInfo[\n\r\s]+([A-Fa-f0-9]+).*/g
-const NODE_INFO_REGEX = /.*\/getNodeInfo[\n\r\s]+([\/\.:A-Za-z0-9]+).*/g
-const BALANCE_REGEX = /.*\/checkBalance[\n\r\s]+([A-Fa-f0-9]+).*/g
+const FAUCET_REGEX = /.*\/givememoney[\n\r\s]+([A-Fa-f0-9]+).*/g
+const TX_INFO_REGEX = /.*\/gettxinfo[\n\r\s]+([A-Fa-f0-9]+).*/g
+const NODE_INFO_REGEX = /.*\/getnodeinfo[\n\r\s]+([\/\.:A-Za-z0-9]+).*/g
+const BALANCE_REGEX = /.*\/checkbalance[\n\r\s]+([A-Fa-f0-9]+).*/g
 
 async function handleWithTimeout(context, ts) {
       let waitMsg = await botMessage(context, `Processing`);
@@ -46,7 +46,7 @@ async function handleBotMessage(message) {
     console.log(`Handling message ${JSON.stringify(message)}`);
 
     let context = message;
-    let command = message.text.toString();
+    let command = message.text.toString().toLowerCase();
 
     /**
     *
@@ -55,18 +55,19 @@ async function handleBotMessage(message) {
 
     if (command === '/start') {
         return await startDialog(context)
-    } else  if (command.indexOf('/checkBalance') !==  -1) {
+    } else  if (command.indexOf('/checkbalance') !==  -1) {
         return await checkBalance(context)
-    } else  if (command.indexOf('/giveMeMoney') !==  -1) {
+    } else  if (command.indexOf('/givememoney') !==  -1) {
         return await giveMeMoney(context)
-    } else if (command.indexOf('/getTxInfo') !== -1) {
+    } else if (command.indexOf('/gettxinfo') !== -1) {
         return await getTxInfo(context)
-    } else if (command.indexOf('/getNodeInfo') !== -1) {
+    } else if (command.indexOf('/getnodeinfo') !== -1) {
         return await getNodeInfo(context)
-    } else if (command.indexOf('/pleaseHelpMe') !== -1) {
+    } else if (command.indexOf('/pleasehelpme') !== -1) {
         return await getHelpInfo(context)
     }
 
+    return await botMessage(context, "Sorry, I can't recognize this command");
  }
 
 async function botMessage(context, text) {
@@ -88,18 +89,32 @@ async function botMessage(context, text) {
       msg.reply_to_message_id = (context.replyTo) ?
             context.replyTo : context.message_id;
     }
+
+    //if (context.replyMarkup) {
+    //  msg.reply_markup:  {
+    //     resize_keyboard: true,
+    //     one_time_keyboard: true,
+    //     keyboard: context.replyMarkup.map(s => [{ text: s }])
+    //  }
+    //}
+
     return bot.sendMessage(msg);
 }
 
 
 
 async function getHelpInfo(context) {
-    return botMessage(context, `We are really sorry to hear something went astray.\ ` +
-          `Please tell us about your issue [here](https://discord.gg/MN6e6Je)\ ` +
+    return botMessage(context, `Usage: ${usageString()}\n\ ` +
+          `If you believe something doesn't work or you are simply up up\ ` +
+          `for a chat, please join us [here](https://discord.gg/MN6e6Je)\ ` +
           `and we will do our best. Yours truly, Helix \u{1F916}.`);
 }
 
 async function startDialog(context) {
+    //context.replyMarkup = ["Check Balance", "Give me HLX!",
+    //      "Check transaction", "Node info", "Help"];
+    //return botMessage(context, "*HLXtestBot* started" + "\u{1F916}\n");
+
     return botMessage(context, "*HLXtestBot* started" + "\u{1F916}\n" + usageString());
 }
 
