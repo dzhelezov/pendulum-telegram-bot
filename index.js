@@ -13,7 +13,7 @@ exports.handler = function (event, context, callback) {
     console.log(data);
     //console.log(data.message);
     // set timeout for 5 seconds
-    let handle = promiseTimeout(2500, handleWithTimeout(data.message, 2000));
+    let handle = promiseTimeout(5500, handleWithTimeout(data.message, 5000));
 
 
     handle.then(response => {
