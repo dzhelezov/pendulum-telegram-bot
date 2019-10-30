@@ -26,7 +26,7 @@ async function handleWithTimeout(context, ts) {
       try {
           context.replyTo = context.message_id;
           context.editMessage = waitMsg.message_id;
-          await promiseTimeout(2000, handleBotMessage(context))
+          await promiseTimeout(5000, handleBotMessage(context))
       } catch (err) {
           if (err instanceof TimeoutException) {
             return await botMessage(context, `Sorry, I had to abort the request as\ ` +
@@ -47,7 +47,7 @@ async function handleBotMessage(message) {
 
     let context = message;
     let command = message.text.toString().toLowerCase();
-
+    context.command = command;
     /**
     *
     * TODO: refactor with a command map
@@ -104,7 +104,7 @@ async function botMessage(context, text) {
 
 
 async function getHelpInfo(context) {
-    return botMessage(context, `Usage: ${usageString()}\n\ ` +
+    return botMessage(context, `Usage: ${usageString()}\n` +
           `If you believe something doesn't work or you are simply up up\ ` +
           `for a chat, please join us [here](https://discord.gg/MN6e6Je)\ ` +
           `and we will do our best. Yours truly, Helix \u{1F916}.`);
@@ -119,7 +119,7 @@ async function startDialog(context) {
 }
 
 async function checkBalance(context) {
-    let command = context.text.toString();
+    let command = context.command;
 
     console.log(`checkBalance: ${command}`);
     let parse = BALANCE_REGEX.exec(command);
@@ -141,7 +141,7 @@ async function checkBalance(context) {
 }
 
 async function giveMeMoney(context) {
-    let command = context.text.toString();
+    let command = context.command;
 
     console.log(`giveMeMoney: ${command}`);
     let parse = FAUCET_REGEX.exec(command);
@@ -186,7 +186,7 @@ async function giveMeMoney(context) {
 }
 
 async function getTxInfo(context) {
-    let command = context.text.toString();
+    let command = context.command;
 
     console.log("getTxInfo: " + command)
     let parse = TX_INFO_REGEX.exec(command)
@@ -214,8 +214,8 @@ async function getTxInfo(context) {
 
 async function getNodeInfo(context) {
     //let chatId = context.chat.id;
-    console.log(context);
-    let command = context.text.toString();
+    //console.log(context);
+    let command = context.command;
 
     let parse = NODE_INFO_REGEX.exec(command)
     console.log(parse)
@@ -244,11 +244,11 @@ async function getNodeInfo(context) {
 function usageString() {
   // TODO: compile from the command map
   return `
-/getNodeInfo <url>: request info about your favorite Helix node
-/getTxInfo <hash>: request confirmation status of a transcation
-/checkBalance <address>: check the current balance of an address
-/giveMeMoney <address>: request 10000 HLX to the specified address
-/pleaseHelpMe: in case you think something is broken or you feel lonely`
+/getnodeinfo <url>: request info about your favorite Helix node
+/gettxinfo <hash>: request confirmation status of a transcation
+/checkbalance <address>: check the current balance of an address
+/givememoney <address>: request 10000 HLX to the specified address
+/pleasehelpme: in case you think something is broken or you feel lonely`
 }
 
 function toCodeSnippet(str, cmd) {
