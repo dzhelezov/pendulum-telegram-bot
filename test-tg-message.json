@@ -1,0 +1,30 @@
+{
+  "update_id":74781773,
+  "message":{
+    "message_id":38,
+    "from":{
+      "id":370798623,
+      "is_bot":false,
+      "first_name":"Dima",
+      "last_name":"Zhelezov",
+      "username":"dzlzv",
+      "language_code":"sv"
+  },
+  "chat":{
+    "id":370798623,
+    "first_name":"Dima",
+    "last_name":"Zhelezov",
+    "username":"dzlzv",
+    "type":"private"
+  },
+  "date":1569425999,
+  "text":"/start",
+  "entities":[
+    {
+      "offset":0,
+      "length":12,
+      "type":"bot_command"
+    }
+  ]
+  }
+}
